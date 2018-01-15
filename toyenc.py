@@ -1,8 +1,8 @@
-import argon2
 import secrets
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA3_512
 from Crypto.Util.Padding import *
+from Crypto.Protocol.KDF import scrypt
 import os.path
 import timeit
 
@@ -19,17 +19,17 @@ B: 32      64        256                 16-padded
 
 '''
 
-# argon2 parameters
-t = 25600
-m = 2048
+# scrypt parameters
+N = 2**22
+r = 8
 p = 2
 
 def benchmark():
-    iters = 100
+    iters = 2**16
     start_time = timeit.default_timer()
-    argon2.argon2_hash(password='password', salt=secrets.token_bytes(32), t=iters, m=m, p=p)
+    scrypt(password='password', salt=secrets.token_bytes(32), key_len=32, N=iters, r=r, p=p)
     elapsed = timeit.default_timer() - start_time
-    predicted = elapsed * t / iters
+    predicted = elapsed * N / iters
 
     print("Key derivation will take about {} seconds ({} per second).".format(
         round(predicted, 2), round(1/predicted, 3)
@@ -39,7 +39,7 @@ def encrypt(inpath, outpath, password):
     filename = os.path.basename(inpath)
     salt = secrets.token_bytes(32)
     print("Deriving key.")
-    key = argon2.argon2_hash(password=password, salt=salt, t=t, m=m, p=2)[:32]
+    key = scrypt(password=password, salt=salt, key_len=32, N=N, r=r, p=p)
 
     print("Reading file.")
     with open(inpath, 'rb') as inf:
@@ -70,7 +70,7 @@ def decrypt(inpath, password):
         in_data = inf.read()
 
     print("Deriving key.")
-    key = argon2.argon2_hash(password=password, salt=salt, t=t, m=m, p=p)[:32]
+    key = scrypt(password=password, salt=salt, key_len=32, N=N, r=r, p=p)
 
     print("Decrypting.")
 
@@ -106,18 +106,20 @@ def decrypt_interactive(password):
 
     decrypt(enc_file, password)
 
-def select_interactive():
+def select_interactive(name_enabled=True):
     mode = None
     while mode!='enc' and mode!='dec':
         print("Please enter ENC or DEC.")
         mode = input("Encrypt or decrypt?: ").lower()
     print("Ok.\n")
-    pwmode = None
+
+
+    pwmode = None if name_enabled else 'no'
     while pwmode!='yes' and pwmode!='no':
         print("Please enter YES or NO.")
         pwmode = input("Use name as password?: ").lower()
 
-    password = get_name() if pwmode == "yes" else input("Enter password:")
+    password = get_name() if pwmode == "yes" else input("Enter password: ")
 
     encrypt_interactive(password) if mode=='enc' else decrypt_interactive(password)
 

@@ -3,8 +3,6 @@ import secrets
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA3_512
 from Crypto.Util.Padding import *
-import tkinter as tk
-from tkinter import filedialog
 import os.path
 import timeit
 
@@ -16,13 +14,10 @@ Storage format:
 |-----|---------|----------|---------------------------------|
    |       |          |                      |
   salt    hash     filename                 data
-B: 32      64         256
+B: 32      64        256                 16-padded
 
 
 '''
-
-root = tk.Tk()
-root.withdraw()
 
 # argon2 parameters
 t = 25600
@@ -128,11 +123,6 @@ def select_interactive():
 
 
 
-
-
-
 if __name__ == '__main__':
     benchmark()
     select_interactive()
-
-    #decrypt_single_file_interactive('encrypted.dat', 'decrypted.zip')

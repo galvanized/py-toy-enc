@@ -17,10 +17,13 @@ Storage format:
 B: 32      64        256                 16-padded
 
 
+Build exe on windows with
+ python "C:\Program Files\Python36\Scripts\cxfreeze" toyenc.py --target-dir dist -OO -c
+ (install cxfreeze first)
 '''
 
 # scrypt parameters
-N = 2**22
+N = 2**24
 r = 8
 p = 2
 
@@ -127,4 +130,4 @@ def select_interactive(name_enabled=True):
 
 if __name__ == '__main__':
     benchmark()
-    select_interactive()
+    select_interactive(False)

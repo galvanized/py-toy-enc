@@ -23,9 +23,9 @@ Build exe on windows with
 '''
 
 # scrypt parameters
-N = 2**24
+N = 2**21 #will take 2GB ram
 r = 8
-p = 2
+p = 8
 
 def benchmark():
     iters = 2**16
